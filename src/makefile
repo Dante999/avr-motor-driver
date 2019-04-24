@@ -19,7 +19,8 @@ BUILDPATH=./build
 SOURCES  = main.c
 SOURCES += led.c
 SOURCES += uart.c
-
+SOURCES += ssd1306.c
+SOURCES += i2cmaster.c
 
 # Progammer
 PROGRAMMER=arduino

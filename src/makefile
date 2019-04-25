@@ -21,6 +21,7 @@ SOURCES += led.c
 SOURCES += uart.c
 SOURCES += ssd1306.c
 SOURCES += i2cmaster.c
+SOURCES += motor.c
 
 # Progammer
 PROGRAMMER=arduino

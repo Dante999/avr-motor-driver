@@ -20,6 +20,7 @@
 #include "i2cmaster.h"
 #include <avr/io.h>
 #include <string.h>
+#include "font_5x7.h"
 
 /*******************************************************************************
  * settings for the ssd1306 display
@@ -82,6 +83,13 @@
 #define SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL     0x2A
 
 
+
+static void ssd1306_command(uint8_t cmd);
+//static void ssd1306_data(uint8_t data);
+static void ssd1306_data(uint8_t *data, uint8_t size);
+
+
+
 /*******************************************************************************
  * @brief   initialize the display
  *
@@ -113,6 +121,7 @@ void ssd1306_init() {
     ssd1306_command(SSD1306_MEMORYMODE);                // 0x20
     ssd1306_command(0x00);                              // 0x00 horizontal addressing
 
+
     ssd1306_command(SSD1306_SEGREMAP | 0x1);            // rotate screen 180
 
     ssd1306_command(SSD1306_COMSCANDEC);                // rotate screen 180
@@ -139,6 +148,8 @@ void ssd1306_init() {
 
     ssd1306_fill(0x00);                                 // clear the whole display
 
+
+
 }
 
 
@@ -162,7 +173,7 @@ void ssd1306_fill(uint8_t symbol) {
     ssd1306_command(7);
 
    for( uint16_t i=0; i <= LCD_BUFFER_SIZE; i = i+BLOCK_SIZE) {
-        ssd1306_data_block(buffer, BLOCK_SIZE);
+        ssd1306_data(buffer, BLOCK_SIZE);
    }
 }
 
@@ -174,47 +185,27 @@ void ssd1306_fill(uint8_t symbol) {
  *
  * @return  none
 ******************************************************************************/
-void ssd1306_command(uint8_t cmd) {
-/*
-    static unsigned char buffer[3];
-
-    buffer[0] = SSD1306_ADDR;
-    buffer[1] = 0x00;
-    buffer[2] = cmd;
-    USI_TWI_Start_Transceiver_With_Data(buffer, 3);
-*/
+static void ssd1306_command(uint8_t cmd) {
     i2c_start_wait(SSD1306_ADDR+I2C_WRITE);     // set device address and write mode
     i2c_write(0x00);                            // following byte is a command
     i2c_write(cmd);                             // write command
     i2c_stop();                                 // set stop conditon = release bus
-
-
-
 }
 
 
-/******************************************************************************
- * @brief   sends the given  data-byte to the display
- *
- * @param   data    the data-byte to send
- *
- * @return  none
-******************************************************************************/
-void ssd1306_data(uint8_t data) {
-/*
-    static unsigned char buffer[3];
-
-    buffer[0] = SSD1306_ADDR;
-    buffer[1] = 0x40;
-    buffer[2] = data;
-
-    USI_TWI_Start_Transceiver_With_Data(buffer, 3);
-*/
-    i2c_start_wait(SSD1306_ADDR+I2C_WRITE);     // set device address and write mode
-    i2c_write(0x40);                            // following byte is data
-    i2c_write(data);                             // write data
-    i2c_stop();                                 // set stop conditon = release bus
-}
+///******************************************************************************
+// * @brief   sends the given  data-byte to the display
+// *
+// * @param   data    the data-byte to send
+// *
+// * @return  none
+//******************************************************************************/
+//static void ssd1306_data(uint8_t data) {
+//    i2c_start_wait(SSD1306_ADDR+I2C_WRITE);     // set device address and write mode
+//    i2c_write(0x40);                            // following byte is data
+//    i2c_write(data);                             // write data
+//    i2c_stop();                                 // set stop conditon = release bus
+//}
 
 
 /******************************************************************************
@@ -226,28 +217,12 @@ void ssd1306_data(uint8_t data) {
  *
  * @return  none
 ******************************************************************************/
-void ssd1306_data_block(uint8_t *data, uint8_t size) {
-/*
-    size_t buffer_size = size + 2;
-
-    uint8_t buffer[buffer_size];
-
-    buffer[0] = SSD1306_ADDR;
-    buffer[1] = 0x40;
-
-
-    uint8_t *start = (uint8_t*) &buffer[2];
-
-    memcpy(start, data, size);
-
-    USI_TWI_Start_Transceiver_With_Data(buffer, buffer_size);
-*/
-    uint8_t i;
+static void ssd1306_data(uint8_t *data, uint8_t size) {
 
     i2c_start_wait(SSD1306_ADDR+I2C_WRITE);     // set device address and write mode
     i2c_write(0x40);                            // following byte is data
 
-    for( i=0; i<size; i++) {
+    for(uint8_t i=0; i<size; i++) {
         i2c_write(data[i]);                             // write data
     }
 
@@ -278,9 +253,39 @@ void ssd1306_draw_tile_colpage(uint8_t column, uint8_t page, uint8_t *tile) {
     ssd1306_command(page);
     ssd1306_command(page);
 
-    ssd1306_data_block(tile, 8);
+    ssd1306_data(tile, 8);
 }
 
+
+void ssd1306_putc(uint8_t column, uint8_t page, char c) {
+
+    ssd1306_command(SSD1306_COLUMNADDR);
+    ssd1306_command(column);
+    ssd1306_command(column+FONT_WIDTH-1);
+
+    ssd1306_command(SSD1306_PAGEADDR);
+    ssd1306_command(page);
+    ssd1306_command(page);
+
+
+    uint16_t letter_index = (c-' ')*FONT_WIDTH;
+
+    uint8_t *ptile = (uint8_t*) (font+letter_index);
+
+    ssd1306_data(ptile, FONT_WIDTH);
+}
+
+
+void ssd1306_puts(uint8_t column, uint8_t page, char *s) {
+
+    while(*s != '\0') {
+        ssd1306_putc(column, page, *s);
+        s++;
+        column += FONT_WIDTH+1;
+    }
+
+
+}
 
 /******************************************************************************
  * @brief   draws the given tile to the display
@@ -339,7 +344,7 @@ void ssd1306_draw_buffer(uint8_t *buffer) {
     ssd1306_command(7);
 
    for( uint16_t i=0; i <= LCD_BUFFER_SIZE; i = i+BLOCK_SIZE) {
-        ssd1306_data_block(buffer, BLOCK_SIZE);
+        ssd1306_data(buffer, BLOCK_SIZE);
    }
 
 }

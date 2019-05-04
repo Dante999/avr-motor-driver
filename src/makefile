@@ -22,6 +22,10 @@ SOURCES += uart.c
 SOURCES += ssd1306.c
 SOURCES += i2cmaster.c
 SOURCES += motor.c
+SOURCES += encoder.c
+SOURCES += timer0.c
+SOURCES += timer1.c
+SOURCES += menue.c
 
 # Progammer
 PROGRAMMER=arduino

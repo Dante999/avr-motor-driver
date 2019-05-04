@@ -1,6 +1,7 @@
+#include "motor.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include "led.h"
+#include "timer1.h"
 
 #ifndef F_CPU
     #error F_CPU is not defined!
@@ -12,26 +13,37 @@
 
 //#define VAL_OCR1A ( (F_CPU/(2*PRESCALER*F_PWM))-1) )
 
+
+#define MOTOR_DDRX  DDRB
+#define MOTOR_PORTX PORTB
+#define MOTOR_BIT   PB1
+
+
+
 static volatile uint8_t g_counter = 0;
 static volatile uint8_t g_power = 0;
 
+static void motor_start();
+static void motor_stop();
 
 void motor_init() {
-    DDRB |= (1<<PB1);       // set as output
-
-    TCCR1B |= (1<<WGM12);   // CTC Mode
-
-
-    // prescaler 1024
-    TCCR1B |= (1<CS12) | (1<<CS10);
-
+    timer1_init();
+    MOTOR_DDRX |= (1<<MOTOR_BIT);
     motor_frequency(100);
-    TIMSK1 |= (1<<OCIE1A);  // enable compare interrupt
 }
 
 
+void motor_frequency(uint16_t frequency) {
+    timer1_set_OCR1A(frequency);
+}
 
-ISR(TIMER1_COMPA_vect) {
+
+void motor_power(uint8_t power) {
+    g_power = power;
+}
+
+
+void motor_cycle() {
     g_counter++;
 
     if( g_counter < g_power ) {
@@ -40,26 +52,16 @@ ISR(TIMER1_COMPA_vect) {
     else {
         motor_stop();
     }
-
-    //led_toggle();
-    //PORTB ^= (1<<PB1);
 }
 
-void motor_frequency(uint16_t frequency) {
-    cli();
-    OCR1AH = (uint8_t) (frequency>>8);
-    OCR1AL = (uint8_t) frequency;
-    sei();
+
+static void motor_start() {
+    MOTOR_PORTX |= (1<<MOTOR_BIT);
 }
 
-void motor_power(uint8_t power) {
-    g_power = power;
+
+static void motor_stop() {
+    MOTOR_PORTX &= ~(1<<MOTOR_BIT);
 }
 
-void motor_start() {
-    PORTB |= (1<<PB1);
-}
 
-void motor_stop() {
-    PORTB &= ~(1<<PB1);
-}

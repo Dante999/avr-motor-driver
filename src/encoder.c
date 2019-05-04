@@ -6,7 +6,7 @@
 /*              Author: Peter Dannegger                                 */
 /*                                                                      */
 /************************************************************************/
-#include <avr/io.h>
+#include "encoder.h"
 #include <avr/interrupt.h>
 #include "led.h"
 
@@ -26,9 +26,24 @@ volatile uint8_t g_encoder_pressed;
 static int8_t last;
 
 
+static void init_timer() {
+    TCCR0A |= (1<<WGM01);
+    TCCR0B |= (1<<CS01) | (1<<CS00);   // CTC, prescaler 64
+
+    OCR0A = (uint8_t)(F_CPU / 64.0 * 1e-3 - 0.5);   // 1ms
+    TIMSK0 |= (1<<OCIE0A);
+}
+
+ISR( TIMER0_COMPA_vect ) {
+    encoder_calc();
+}
+
 
 void encoder_init( void )
 {
+
+    init_timer();
+
   int8_t new;
 
   new = 0;

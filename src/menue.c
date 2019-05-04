@@ -2,27 +2,20 @@
 #include <stdio.h>
 #include "menue.h"
 #include "ssd1306.h"
+#include "motor.h"
 
 #define MENUE_X_NAME  12
-#define MENUE_X_VALUE 100
+#define MENUE_X_VALUE 80
 
 #define MENUE_Y_POWER   0
-#define MENUE_Y_CLOCK   1
-#define MENUE_Y_TIMEON  2
-#define MENUE_Y_TIMEOFF 3
+#define MENUE_Y_TIMEON  1
+#define MENUE_Y_TIMEOFF 2
 
-#define MENUE_Y_MAX     3
+#define MENUE_Y_MAX     2
 
 // 1 = true | 0 = false
 #define MENUE_INVERT_DIRECTION 1
 
-
-
-
-//static uint8_t g_menue_power = 0;
-//static uint8_t g_menue_clock = 0;
-//static uint8_t g_menue_timeon = 0;
-//static uint8_t g_menue_timeoff = 0;
 
 
 
@@ -44,15 +37,10 @@ static void handle_power(int8_t delta) {
     static uint8_t power = 0;
 
     power += delta;
+    motor_power(power);
     draw_value(MENUE_Y_POWER, power);
 }
 
-static void handle_clock(int8_t delta) {
-    static uint8_t clock = 0;
-
-    clock += delta;
-    draw_value(MENUE_Y_CLOCK, clock);
-}
 
 static void handle_timeon(int8_t delta) {
     static uint8_t time_on = 0;
@@ -69,58 +57,15 @@ static void handle_timeoff(int8_t delta) {
 }
 
 void menue_init() {
-    ssd1306_puts(MENUE_X_NAME, MENUE_Y_POWER,   "Max Power....");
-    ssd1306_puts(MENUE_X_NAME, MENUE_Y_CLOCK,   "Clock........");
-    ssd1306_puts(MENUE_X_NAME, MENUE_Y_TIMEON,  "Time On......");
-    ssd1306_puts(MENUE_X_NAME, MENUE_Y_TIMEOFF, "Time Off.....");
+    ssd1306_puts(MENUE_X_NAME, MENUE_Y_POWER,   "Max Power : ");
+    ssd1306_puts(MENUE_X_NAME, MENUE_Y_TIMEON,  "Time On   : ");
+    ssd1306_puts(MENUE_X_NAME, MENUE_Y_TIMEOFF, "Time Off  : ");
 
     draw_cursor(MENUE_Y_POWER);
-    handle_clock(0);
     handle_power(0);
     handle_timeon(0);
     handle_timeoff(0);
 }
-
-
-//void menue_set_power(uint8_t value) {
-//    char buffer[4];
-//    sprintf(buffer, "%3d", value);
-//    ssd1306_puts(MENUE_X_VALUE, MENUE_Y_POWER, buffer);
-//}
-
-//void menue_set_clock(uint8_t value) {
-//    char buffer[4];
-//    sprintf(buffer, "%3d", value);
-//    ssd1306_puts(MENUE_X_VALUE, MENUE_Y_CLOCK, buffer);
-//}
-
-//void menue_set_timeon(uint8_t value) {
-//    char buffer[4];
-//    sprintf(buffer, "%3d", value);
-//    ssd1306_puts(MENUE_X_VALUE, MENUE_Y_TIMEON, buffer);
-//}
-
-//void menue_set_timeoff(uint8_t value) {
-//    char buffer[4];
-//    sprintf(buffer, "%3d", value);
-//    ssd1306_puts(MENUE_X_VALUE, MENUE_Y_TIMEOFF, buffer);
-//}
-
-//uint8_t menue_get_power() {
-
-//}
-
-//uint8_t menue_get_clock() {
-
-//}
-
-//uint8_t menue_get_timeon() {
-
-//}
-
-//uint8_t menue_get_timeoff() {
-
-//}
 
 
 static uint8_t menue_move(int8_t direction) {
@@ -168,9 +113,6 @@ static void menue_edit(uint8_t line, int8_t encoder_value) {
 
     case MENUE_Y_POWER:
         handle_power(encoder_value);
-        break;
-    case MENUE_Y_CLOCK:
-        handle_clock(encoder_value);
         break;
     case MENUE_Y_TIMEON:
         handle_timeon(encoder_value);

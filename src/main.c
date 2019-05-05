@@ -8,79 +8,58 @@
 #include "motor.h"
 #include "graphx.h"
 #include "encoder.h"
-#include "timer0.h"
 #include "menue.h"
-
-
-
-
+#include "timer2.h"
+#include "settings.h"
 
 static void init() {
     led_init();
     uart_init();
     ssd1306_init();
     motor_init();
-    encoder_init();
-    menue_init();
+    timer2_init();
 }
 
 
 
 
 
+#define STATE_MOTOR_ON 1
+#define STATE_MOTOR_OFF 0
 
+static void scheduler(struct Settings *settings) {
 
-//static void time_encoder(uint8_t ms_counter) {
-//    static uint8_t old_ms = 0;
+    static uint8_t motor_state = STATE_MOTOR_ON;
 
+    if( motor_state == STATE_MOTOR_ON ) {
 
-//    if( ms_counter != old_ms ) {
-//        encoder_calc();
-//    }
+        led_set_on();
 
-//    old_ms = ms_counter;
-//}
-
-//static void handle_timing() {
-
-//    uint8_t ms_counter = timer0_get_counter();
-
-//    time_encoder(ms_counter);
-
-//}
-
-
-static uint8_t toggle_mode() {
-    static uint8_t current_mode = MENUE_MODE_VIEW;
-
-    if( current_mode == MENUE_MODE_VIEW ) {
-        current_mode = MENUE_MODE_EDIT;
+        if( g_timer2_100ms < settings->motor_ontime ) {
+            motor_power(settings->motor_power);
+        }
+        else {
+            motor_power(0);
+            motor_state = STATE_MOTOR_OFF;
+            g_timer2_100ms = 0;
+        }
     }
     else {
-        current_mode = MENUE_MODE_VIEW;
+
+        led_set_off();
+
+        if( g_timer2_100ms < settings->motor_offtime ) {
+            motor_power(0);
+        }
+        else {
+            motor_power(settings->motor_power);
+            motor_state = STATE_MOTOR_ON;
+            g_timer2_100ms = 0;
+        }
     }
 
-    return current_mode;
 }
 
-static void handle_menue() {
-    static int8_t encoder_val = 0;
-    static uint8_t switch_old = 0;
-    static uint8_t switch_new = 0;
-    static uint8_t mode = MENUE_MODE_VIEW;
-
-    switch_new = encoder_switch();
-
-    if( (switch_new == 1) && (switch_old == 0) ) {
-        mode = toggle_mode();
-    }
-
-    encoder_val += encoder_read();
-    menue_refresh(mode, encoder_val);
-    encoder_val = 0;
-
-    switch_old = switch_new;
-}
 
 
 
@@ -89,12 +68,15 @@ int main() {
     init();
     sei();
 
+    struct Settings Setting;
 
+    settings_load(&Setting);
 
+    menue_init(&Setting);
 
     while(1) {
-//        handle_timing();
-        handle_menue();
+        menue_refresh(&Setting);
+        scheduler(&Setting);
     }
 
 

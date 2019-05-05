@@ -24,6 +24,8 @@ SOURCES += i2cmaster.c
 SOURCES += motor.c
 SOURCES += encoder.c
 SOURCES += menue.c
+SOURCES += timer2.c
+SOURCES += settings.c
 
 # Progammer
 PROGRAMMER=arduino

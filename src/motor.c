@@ -26,3 +26,4 @@ void motor_power(uint8_t power) {
     OCR1A = power;
 }
 
+

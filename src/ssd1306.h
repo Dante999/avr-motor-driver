@@ -17,8 +17,8 @@
  * function prototypes
 *******************************************************************************/
 void ssd1306_init();
-void ssd1306_putc(uint8_t column, uint8_t page, char c);
-void ssd1306_puts(uint8_t column, uint8_t page, char *s);
+uint8_t ssd1306_putc(uint8_t column, uint8_t page, char c);
+uint8_t ssd1306_puts(uint8_t column, uint8_t page, char *s);
 
 
 

@@ -8,10 +8,10 @@
 /************************************************************************/
 #include "encoder.h"
 #include <avr/interrupt.h>
-#include "led.h"
+
 
 // valid: 1, 2, 4
-#define ENCODER_STEPS 2
+#define ENCODER_STEPS   2
 #define SWITCH_DEBOUNCE 5
 
 #define SWITCH      (PINC & 1<<PC1)

@@ -19,7 +19,7 @@
 void ssd1306_init();
 uint8_t ssd1306_putc(uint8_t column, uint8_t page, char c);
 uint8_t ssd1306_puts(uint8_t column, uint8_t page, char *s);
-
+uint8_t ssd1306_draw_bitmap(uint8_t column, uint8_t page, const uint8_t *ptile, uint8_t width);
 
 
 void ssd1306_draw_pagetile(uint8_t column, uint8_t page, const uint8_t  *tile, uint8_t tile_width);

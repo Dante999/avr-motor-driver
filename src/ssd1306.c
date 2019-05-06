@@ -259,22 +259,11 @@ void ssd1306_draw_tile_colpage(uint8_t column, uint8_t page, uint8_t *tile) {
 
 uint8_t ssd1306_putc(uint8_t column, uint8_t page, char c) {
 
-    ssd1306_command(SSD1306_COLUMNADDR);
-    ssd1306_command(column);
-    ssd1306_command(column+FONT_WIDTH-1);
-
-    ssd1306_command(SSD1306_PAGEADDR);
-    ssd1306_command(page);
-    ssd1306_command(page);
-
-
     uint16_t letter_index = (c-' ')*FONT_WIDTH;
 
-    uint8_t *ptile = (uint8_t*) (font+letter_index);
+    const uint8_t *ptile = (const uint8_t*) (font+letter_index);
 
-    ssd1306_data(ptile, FONT_WIDTH);
-
-    return column+FONT_WIDTH+1;
+    return ssd1306_draw_bitmap(column, page, ptile, FONT_WIDTH);
 }
 
 
@@ -286,6 +275,20 @@ uint8_t ssd1306_puts(uint8_t column, uint8_t page, char *s) {
     }
 
     return column;
+}
+
+uint8_t ssd1306_draw_bitmap(uint8_t column, uint8_t page, const uint8_t *ptile, uint8_t width) {
+    ssd1306_command(SSD1306_COLUMNADDR);
+    ssd1306_command(column);
+    ssd1306_command(column+width-1);
+
+    ssd1306_command(SSD1306_PAGEADDR);
+    ssd1306_command(page);
+    ssd1306_command(page);
+
+    ssd1306_data((uint8_t*) ptile, width);
+
+    return column+width+1;
 }
 
 /******************************************************************************

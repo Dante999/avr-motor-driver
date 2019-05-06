@@ -24,23 +24,22 @@ static void init() {
 
 
 
-#define STATE_MOTOR_ON 1
-#define STATE_MOTOR_OFF 0
-
 static void scheduler(struct Settings *settings) {
 
-    static uint8_t motor_state = STATE_MOTOR_ON;
+    uint8_t counter_100ms = g_timer2_100ms;
 
-    if( motor_state == STATE_MOTOR_ON ) {
+
+    if( settings->motor_state == MOTOR_STATE_RUNNING ) {
 
         led_set_on();
 
-        if( g_timer2_100ms < settings->motor_ontime ) {
+        if( counter_100ms < settings->motor_ontime ) {
+            settings->time_left = settings->motor_ontime-counter_100ms;
             motor_power(settings->motor_power);
         }
         else {
+            settings->motor_state = MOTOR_STATE_STOPPED;
             motor_power(0);
-            motor_state = STATE_MOTOR_OFF;
             g_timer2_100ms = 0;
         }
     }
@@ -48,12 +47,13 @@ static void scheduler(struct Settings *settings) {
 
         led_set_off();
 
-        if( g_timer2_100ms < settings->motor_offtime ) {
+        if( counter_100ms < settings->motor_offtime ) {
+            settings->time_left = settings->motor_offtime-counter_100ms;
             motor_power(0);
         }
         else {
             motor_power(settings->motor_power);
-            motor_state = STATE_MOTOR_ON;
+            settings->motor_state = MOTOR_STATE_RUNNING;
             g_timer2_100ms = 0;
         }
     }

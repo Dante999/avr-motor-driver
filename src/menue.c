@@ -9,10 +9,13 @@
 #define MENUE_X_VALUE 80
 
 
-#define MENUE_Y_MIN     3
-#define MENUE_Y_POWER   MENUE_Y_MIN
-#define MENUE_Y_TIMEON  MENUE_Y_MIN+1
-#define MENUE_Y_TIMEOFF MENUE_Y_MIN+2
+
+#define MENUE_Y_POWER   3
+#define MENUE_Y_TIMEON  4
+#define MENUE_Y_TIMEOFF 5
+#define MENUE_Y_STATE   7
+
+#define MENUE_Y_MIN     MENUE_Y_POWER
 #define MENUE_Y_MAX     MENUE_Y_TIMEOFF
 
 
@@ -58,6 +61,19 @@ static void draw_motor_offtime(struct Settings *settings) {
     draw_floating_value(MENUE_Y_TIMEOFF, settings->motor_offtime);
 }
 
+static void draw_motor_state(struct Settings *psettings) {
+
+    if( psettings->motor_state == MOTOR_STATE_RUNNING ) {
+        ssd1306_puts(MENUE_X_NAME, MENUE_Y_STATE, "running...");
+    }
+    else {
+        ssd1306_puts(MENUE_X_NAME, MENUE_Y_STATE, "stopped...");
+    }
+
+    draw_floating_value(7, psettings->time_left);
+
+}
+
 static void draw_view_cursor(uint8_t line) {
     ssd1306_puts(0, line, "->");
 }
@@ -73,25 +89,6 @@ static void draw_edit_cursor(uint8_t line) {
 static void clear_edit_cursor(uint8_t line) {
     ssd1306_puts(0, line, "  ");
 }
-
-
-void menue_init(struct Settings *settings) {
-    encoder_init();
-
-    uint8_t x = ssd1306_puts(0, 0, "AVR Motor Driver ");
-    ssd1306_puts(x, 0, RELEASE_VERSION);
-
-    ssd1306_puts(0, 1, "---------------------");
-    ssd1306_puts(MENUE_X_NAME, MENUE_Y_POWER,   "Max Power : ");
-    ssd1306_puts(MENUE_X_NAME, MENUE_Y_TIMEON,  "Time On   : ");
-    ssd1306_puts(MENUE_X_NAME, MENUE_Y_TIMEOFF, "Time Off  : ");
-
-    draw_view_cursor(MENUE_Y_POWER);
-    draw_motor_power(settings);
-    draw_motor_ontime(settings);
-    draw_motor_offtime(settings);
-}
-
 
 static uint8_t handle_view_mode() {
     static uint8_t current_line = MENUE_Y_MIN;
@@ -189,6 +186,25 @@ static void handle_encoder_switch(struct Settings *settings, uint8_t current_lin
     switch_old = switch_new;
 }
 
+void menue_init(struct Settings *settings) {
+    encoder_init();
+
+    uint8_t x = ssd1306_puts(0, 0, "AVR Motor Driver ");
+    ssd1306_puts(x, 0, RELEASE_VERSION);
+
+    ssd1306_puts(0, 1, "---------------------");
+    ssd1306_puts(MENUE_X_NAME, MENUE_Y_POWER,   "Max Power : ");
+    ssd1306_puts(MENUE_X_NAME, MENUE_Y_TIMEON,  "Time On   : ");
+    ssd1306_puts(MENUE_X_NAME, MENUE_Y_TIMEOFF, "Time Off  : ");
+
+    draw_view_cursor(MENUE_Y_POWER);
+    draw_motor_power(settings);
+    draw_motor_ontime(settings);
+    draw_motor_offtime(settings);
+
+    draw_motor_state(settings);
+}
+
 
 void menue_refresh(struct Settings *settings) {
     static uint8_t current_line = MENUE_Y_MIN;
@@ -201,6 +217,8 @@ void menue_refresh(struct Settings *settings) {
     else {
         handle_edit_mode(settings, current_line);
     }
+
+    draw_motor_state(settings);
 
 }
 

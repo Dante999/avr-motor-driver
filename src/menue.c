@@ -4,15 +4,17 @@
 #include "ssd1306.h"
 #include "encoder.h"
 #include "version.h"
+#include "bitmap.h"
 
 #define MENUE_X_NAME  12
 #define MENUE_X_VALUE 80
+#define MENUE_X_STATE 40
 
 
 
-#define MENUE_Y_POWER   3
-#define MENUE_Y_TIMEON  4
-#define MENUE_Y_TIMEOFF 5
+#define MENUE_Y_POWER   2
+#define MENUE_Y_TIMEON  3
+#define MENUE_Y_TIMEOFF 4
 #define MENUE_Y_STATE   7
 
 #define MENUE_Y_MIN     MENUE_Y_POWER
@@ -24,8 +26,9 @@
 
 static void draw_value(uint8_t line, uint8_t value) {
     char buffer[4];
-    sprintf(buffer, "%3d", value);
-    ssd1306_puts(MENUE_X_VALUE, line, buffer);
+    sprintf(buffer, "%03d", value);
+    uint8_t col = ssd1306_puts(MENUE_X_VALUE, line, "  ");
+    ssd1306_puts(col, line, buffer);
 }
 
 static void draw_floating_value(uint8_t line, uint8_t value) {
@@ -61,13 +64,36 @@ static void draw_motor_offtime(struct Settings *settings) {
     draw_floating_value(MENUE_Y_TIMEOFF, settings->motor_offtime);
 }
 
+#define ANIMATION_DELAY 10
+
 static void draw_motor_state(struct Settings *psettings) {
 
-    if( psettings->motor_state == MOTOR_STATE_RUNNING ) {
-        ssd1306_puts(MENUE_X_NAME, MENUE_Y_STATE, "running...");
-    }
-    else {
-        ssd1306_puts(MENUE_X_NAME, MENUE_Y_STATE, "stopped...");
+    static uint8_t i = 0;
+
+    i++;
+
+    uint8_t x = MENUE_X_STATE;
+
+    ssd1306_draw_bitmap(x+1*BITMAP_WIDTH, 7, bitmap_crankshaft, BITMAP_WIDTH);
+    ssd1306_draw_bitmap(x+3*BITMAP_WIDTH, 7, bitmap_crankshaft, BITMAP_WIDTH);
+    ssd1306_draw_bitmap(x+5*BITMAP_WIDTH, 7, bitmap_crankshaft, BITMAP_WIDTH);
+
+    if( i%ANIMATION_DELAY == 0 && psettings->motor_state == MOTOR_STATE_RUNNING ) {
+        static uint8_t k = 0;
+        ssd1306_draw_bitmap(x+0*BITMAP_WIDTH, 6, bitmap_cylinder+k*BITMAP_WIDTH,       BITMAP_WIDTH);
+        ssd1306_draw_bitmap(x+0*BITMAP_WIDTH, 7, bitmap_connecting_rod+k*BITMAP_WIDTH, BITMAP_WIDTH);
+
+        k ^= (1<<0);
+        ssd1306_draw_bitmap(x+2*BITMAP_WIDTH, 6, (bitmap_cylinder+k*BITMAP_WIDTH),       BITMAP_WIDTH);
+        ssd1306_draw_bitmap(x+2*BITMAP_WIDTH, 7, (bitmap_connecting_rod+k*BITMAP_WIDTH), BITMAP_WIDTH);
+
+        k ^= (1<<0);
+        ssd1306_draw_bitmap(x+4*BITMAP_WIDTH, 6, bitmap_cylinder+k*BITMAP_WIDTH,       BITMAP_WIDTH);
+        ssd1306_draw_bitmap(x+4*BITMAP_WIDTH, 7, bitmap_connecting_rod+k*BITMAP_WIDTH, BITMAP_WIDTH);
+
+        k ^= (1<<0);
+        ssd1306_draw_bitmap(x+6*BITMAP_WIDTH, 6, bitmap_cylinder+k*BITMAP_WIDTH,       BITMAP_WIDTH);
+        ssd1306_draw_bitmap(x+6*BITMAP_WIDTH, 7, bitmap_connecting_rod+k*BITMAP_WIDTH, BITMAP_WIDTH);
     }
 
     draw_floating_value(7, psettings->time_left);
@@ -196,7 +222,7 @@ void menue_init(struct Settings *settings) {
     ssd1306_puts(MENUE_X_NAME, MENUE_Y_POWER,   "Max Power : ");
     ssd1306_puts(MENUE_X_NAME, MENUE_Y_TIMEON,  "Time On   : ");
     ssd1306_puts(MENUE_X_NAME, MENUE_Y_TIMEOFF, "Time Off  : ");
-
+    ssd1306_puts(0, MENUE_Y_MAX+1, "---------------------");
     draw_view_cursor(MENUE_Y_POWER);
     draw_motor_power(settings);
     draw_motor_ontime(settings);

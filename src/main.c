@@ -6,7 +6,6 @@
 #include "uart.h"
 #include "ssd1306.h"
 #include "motor.h"
-#include "graphx.h"
 #include "encoder.h"
 #include "menue.h"
 #include "timer2.h"

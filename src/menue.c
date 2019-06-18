@@ -78,7 +78,7 @@ static void draw_motor_state(struct Settings *psettings) {
     ssd1306_draw_bitmap(x+3*BITMAP_WIDTH, 7, bitmap_crankshaft, BITMAP_WIDTH);
     ssd1306_draw_bitmap(x+5*BITMAP_WIDTH, 7, bitmap_crankshaft, BITMAP_WIDTH);
 
-    if( i%ANIMATION_DELAY == 0 && psettings->motor_state == MOTOR_STATE_RUNNING ) {
+    if( (i%ANIMATION_DELAY==0) && (psettings->flags&FLAG_MOTOR_RUNNING) ) {
         static uint8_t k = 0;
         ssd1306_draw_bitmap(x+0*BITMAP_WIDTH, 6, bitmap_cylinder+k*BITMAP_WIDTH,       BITMAP_WIDTH);
         ssd1306_draw_bitmap(x+0*BITMAP_WIDTH, 7, bitmap_connecting_rod+k*BITMAP_WIDTH, BITMAP_WIDTH);
@@ -183,18 +183,19 @@ static void handle_edit_mode(struct Settings *settings, uint8_t line) {
 
 }
 
-static void toggle_mode(struct Settings *settings, uint8_t current_line) {
+static void toggle_mode(struct Settings *psettings, uint8_t current_line) {
 
-    if( settings->menue_mode == MENUE_MODE_VIEW ) {
-        settings->menue_mode = MENUE_MODE_EDIT;
-        clear_view_cursor(current_line);
-        draw_edit_cursor(current_line);
-    }
-    else {
-        settings->menue_mode = MENUE_MODE_VIEW;
+    if( psettings->flags & FLAG_EDIT_MODE ) {
+        psettings->flags &= ~(FLAG_EDIT_MODE);
         clear_edit_cursor(current_line);
         draw_view_cursor(current_line);
     }
+    else {
+        psettings->flags |= (FLAG_EDIT_MODE);
+        clear_view_cursor(current_line);
+        draw_edit_cursor(current_line);
+    }
+
 }
 
 
@@ -212,7 +213,7 @@ static void handle_encoder_switch(struct Settings *settings, uint8_t current_lin
     switch_old = switch_new;
 }
 
-void menue_init(struct Settings *settings) {
+void menue_init(struct Settings *psettings) {
     encoder_init();
 
     uint8_t x = ssd1306_puts(0, 0, "AVR Motor Driver ");
@@ -224,27 +225,28 @@ void menue_init(struct Settings *settings) {
     ssd1306_puts(MENUE_X_NAME, MENUE_Y_TIMEOFF, "Time Off  : ");
     ssd1306_puts(0, MENUE_Y_MAX+1, "---------------------");
     draw_view_cursor(MENUE_Y_POWER);
-    draw_motor_power(settings);
-    draw_motor_ontime(settings);
-    draw_motor_offtime(settings);
+    draw_motor_power(psettings);
+    draw_motor_ontime(psettings);
+    draw_motor_offtime(psettings);
 
-    draw_motor_state(settings);
+    draw_motor_state(psettings);
 }
 
 
-void menue_refresh(struct Settings *settings) {
+void menue_refresh(struct Settings *psettings) {
     static uint8_t current_line = MENUE_Y_MIN;
 
-    handle_encoder_switch(settings, current_line);
+    handle_encoder_switch(psettings, current_line);
 
-    if( settings->menue_mode == MENUE_MODE_VIEW ) {
-        current_line = handle_view_mode();
+    if( psettings->flags & FLAG_EDIT_MODE ) {
+        handle_edit_mode(psettings, current_line);
     }
     else {
-        handle_edit_mode(settings, current_line);
+        current_line = handle_view_mode();
     }
 
-    draw_motor_state(settings);
+
+    draw_motor_state(psettings);
 
 }
 

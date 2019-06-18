@@ -4,16 +4,17 @@
 
 
 
-void settings_load(struct Settings *settings) {
-    settings->menue_mode = MENUE_MODE_VIEW;
-    settings->time_left = 0;
+void settings_load(struct Settings *psettings) {
 
-    settings->motor_state   = MOTOR_STATE_STOPPED;
-    settings->motor_power   = 0;
-    settings->motor_ontime  = 10;
-    settings->motor_offtime = 50;
+    psettings->time_left = 0;
+
+    psettings->flags &= FLAG_MOTOR_RUNNING;
+    psettings->flags &= FLAG_EDIT_MODE;
+    psettings->motor_power   = 0;
+    psettings->motor_ontime  = 10;
+    psettings->motor_offtime = 50;
 }
 
-void settings_save(struct Settings *settings) {
+void settings_save(struct Settings *psettings) {
     // save to eeprom at some time...
 }

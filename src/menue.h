@@ -4,10 +4,9 @@
 #include "settings.h"
 
 
-void menue_init(struct Settings *settings);
+void menue_init(struct Settings *psettings);
+void menue_refresh(struct Settings *psettings);
 
-void menue_refresh(struct Settings *settings);
-//void menue_refresh(uint8_t mode, int8_t encoder_value);
 
 
 #endif // MENUE_H

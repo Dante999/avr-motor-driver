@@ -2,6 +2,6 @@
 #define VERSION_H
 
 
-#define RELEASE_VERSION "V0.1"
+#define RELEASE_VERSION "V0.2"
 
 #endif // VERSION_H

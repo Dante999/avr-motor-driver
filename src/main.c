@@ -11,6 +11,8 @@
 #include "timer2.h"
 #include "settings.h"
 
+
+
 /**
  * @brief initializes all relevant modules
  */
@@ -60,6 +62,9 @@ static void handle_system_active(struct Settings *psettings) {
 
 }
 
+static void handle_system_inactive(struct Settings *psettings) {
+    led_set_off();
+}
 
 
 /**
@@ -71,6 +76,9 @@ static void scheduler(struct Settings *psettings) {
 
     if( psettings->flags & FLAG_SYSTEM_ACTIVE ) {
         handle_system_active(psettings);
+    }
+    else {
+        handle_system_inactive(psettings);
     }
 
 }

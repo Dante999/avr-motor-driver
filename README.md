@@ -1,11 +1,13 @@
 # AVR Motor Driver
 The idea of this project is to control a small water pump, which is used to 
-cool down the milling head of a cnc machine. For a flexible cooling interval, 
+cool down the milling head of a CNC machine. For a flexible cooling interval, 
 it is possible to set the maximum power the pump will receive and the time
 the pump is running / paused. 
 
 As an example, the pump could run with 50% for a period of 10 seconds and after
 that pause for 5 seconds. 
+
+![photo of the prototype](files/prototype-board.jpg)
 
 # Build the Project
 ```
@@ -14,12 +16,10 @@ that pause for 5 seconds.
 ```
 
 # Schematic 
-The schematic is located under `files/schematic-avr-motor-driver.pdf`  
 
-# Picture 
-This is a picture for the prototype board with one of the first working software
-revisions. 
+![schematic](files/schematic-avr-motor-driver.png)
 
-![alt text](files/prototype-board.jpg "prototype board")
+There is also a PDF version of the schematic located under 
+`files/schematic-avr-motor-driver.pdf`
 
 

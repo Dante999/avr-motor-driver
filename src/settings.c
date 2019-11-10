@@ -10,9 +10,10 @@ void settings_load(struct Settings *psettings) {
 
     psettings->flags &= FLAG_MOTOR_RUNNING;
     psettings->flags &= FLAG_EDIT_MODE;
-    psettings->motor_power   = 0;
-    psettings->motor_ontime  = 10;
-    psettings->motor_offtime = 50;
+    psettings->flags &= FLAG_SYSTEM_ACTIVE;
+    psettings->motor_power   = 200;
+    psettings->motor_ontime  = 5;
+    psettings->motor_offtime = 20;
 }
 
 void settings_save(struct Settings *psettings) {
